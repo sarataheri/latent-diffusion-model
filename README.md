@@ -16,27 +16,6 @@
 <img src=assets/modelfigure.png />
 </p>
 
-## News
-
-### July 2022
-- Inference code and model weights to run our [retrieval-augmented diffusion models](https://arxiv.org/abs/2204.11824) are now available. See [this section](#retrieval-augmented-diffusion-models).
-### April 2022
-- Thanks to [Katherine Crowson](https://github.com/crowsonkb), classifier-free guidance received a ~2x speedup and the [PLMS sampler](https://arxiv.org/abs/2202.09778) is available. See also [this PR](https://github.com/CompVis/latent-diffusion/pull/51).
-
-- Our 1.45B [latent diffusion LAION model](#text-to-image) was integrated into [Huggingface Spaces 🤗](https://huggingface.co/spaces) using [Gradio](https://github.com/gradio-app/gradio). Try out the Web Demo: [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/multimodalart/latentdiffusion)
-
-- More pre-trained LDMs are available: 
-  - A 1.45B [model](#text-to-image) trained on the [LAION-400M](https://arxiv.org/abs/2111.02114) database.
-  - A class-conditional model on ImageNet, achieving a FID of 3.6 when using [classifier-free guidance](https://openreview.net/pdf?id=qw8AKxfYbI) Available via a [colab notebook](https://colab.research.google.com/github/CompVis/latent-diffusion/blob/main/scripts/latent_imagenet_diffusion.ipynb) [![][colab]][colab-cin].
-  
-## Requirements
-A suitable [conda](https://conda.io/) environment named `ldm` can be created
-and activated with:
-
-```
-conda env create -f environment.yaml
-conda activate ldm
-```
 
 # Pretrained Models
 A general list of all available checkpoints is available in via our [model zoo](#model-zoo).
@@ -60,75 +39,7 @@ wget -O models/rdm/rdm768x768/model.ckpt https://ommer-lab.com/files/rdm/model.c
 ```
 As these models are conditioned on a set of CLIP image embeddings, our RDMs support different inference modes, 
 which are described in the following.
-#### RDM with text-prompt only (no explicit retrieval needed)
-Since CLIP offers a shared image/text feature space, and RDMs learn to cover a neighborhood of a given
-example during training, we can directly take a CLIP text embedding of a given prompt and condition on it.
-Run this mode via
-```
-python scripts/knn2img.py  --prompt "a happy bear reading a newspaper, oil on canvas"
-```
 
-#### RDM with text-to-image retrieval
-
-To be able to run a RDM conditioned on a text-prompt and additionally images retrieved from this prompt, you will also need to download the corresponding retrieval database. 
-We provide two distinct databases extracted from the [Openimages-](https://storage.googleapis.com/openimages/web/index.html) and [ArtBench-](https://github.com/liaopeiyuan/artbench) datasets. 
-Interchanging the databases results in different capabilities of the model as visualized below, although the learned weights are the same in both cases. 
-
-Download the retrieval-databases which contain the retrieval-datasets ([Openimages](https://storage.googleapis.com/openimages/web/index.html) (~11GB) and [ArtBench](https://github.com/liaopeiyuan/artbench) (~82MB)) compressed into CLIP image embeddings:
-```bash
-mkdir -p data/rdm/retrieval_databases
-wget -O data/rdm/retrieval_databases/artbench.zip https://ommer-lab.com/files/rdm/artbench_databases.zip
-wget -O data/rdm/retrieval_databases/openimages.zip https://ommer-lab.com/files/rdm/openimages_database.zip
-unzip data/rdm/retrieval_databases/artbench.zip -d data/rdm/retrieval_databases/
-unzip data/rdm/retrieval_databases/openimages.zip -d data/rdm/retrieval_databases/
-```
-We also provide trained [ScaNN](https://github.com/google-research/google-research/tree/master/scann) search indices for ArtBench. Download and extract via
-```bash
-mkdir -p data/rdm/searchers
-wget -O data/rdm/searchers/artbench.zip https://ommer-lab.com/files/rdm/artbench_searchers.zip
-unzip data/rdm/searchers/artbench.zip -d data/rdm/searchers
-```
-
-Since the index for OpenImages is large (~21 GB), we provide a script to create and save it for usage during sampling. Note however,
-that sampling with the OpenImages database will not be possible without this index. Run the script via
-```bash
-python scripts/train_searcher.py
-```
-
-Retrieval based text-guided sampling with visual nearest neighbors can be started via 
-```
-python scripts/knn2img.py  --prompt "a happy pineapple" --use_neighbors --knn <number_of_neighbors> 
-```
-Note that the maximum supported number of neighbors is 20. 
-The database can be changed via the cmd parameter ``--database`` which can be `[openimages, artbench-art_nouveau, artbench-baroque, artbench-expressionism, artbench-impressionism, artbench-post_impressionism, artbench-realism, artbench-renaissance, artbench-romanticism, artbench-surrealism, artbench-ukiyo_e]`.
-For using `--database openimages`, the above script (`scripts/train_searcher.py`) must be executed before.
-Due to their relatively small size, the artbench datasetbases are best suited for creating more abstract concepts and do not work well for detailed text control. 
-
-
-#### Coming Soon
-- better models
-- more resolutions
-- image-to-image retrieval
-
-## Text-to-Image
-![text2img-figure](assets/txt2img-preview.png) 
-
-
-Download the pre-trained weights (5.7GB)
-```
-mkdir -p models/ldm/text2img-large/
-wget -O models/ldm/text2img-large/model.ckpt https://ommer-lab.com/files/latent-diffusion/nitro/txt2img-f8-large/model.ckpt
-```
-and sample with
-```
-python scripts/txt2img.py --prompt "a virus monster is playing guitar, oil on canvas" --ddim_eta 0.0 --n_samples 4 --n_iter 4 --scale 5.0  --ddim_steps 50
-```
-This will save each sample individually as well as a grid of size `n_iter` x `n_samples` at the specified output location (default: `outputs/txt2img-samples`).
-Quality, sampling speed and diversity are best controlled via the `scale`, `ddim_steps` and `ddim_eta` arguments.
-As a rule of thumb, higher values of `scale` produce better samples at the cost of a reduced output diversity.   
-Furthermore, increasing `ddim_steps` generally also gives higher quality samples, but returns are diminishing for values > 250.
-Fast sampling (i.e. low values of `ddim_steps`) while retaining good quality can be achieved by using `--ddim_eta 0.0`.  
-Faster sampling (i.e. even lower values of `ddim_steps`) while retaining good quality can be achieved by using `--ddim_eta 0.0` and `--plms` (see [Pseudo Numerical Methods for Diffusion Models on Manifolds](https://arxiv.org/abs/2202.09778)).
 
 #### Beyond 256²
 
@@ -146,20 +57,7 @@ The example below was generated using the above command.
 
 
 
-## Inpainting
-![inpainting](assets/inpainting.png)
 
-Download the pre-trained weights
-```
-wget -O models/ldm/inpainting_big/last.ckpt https://heibox.uni-heidelberg.de/f/4d9ac7ea40c64582b7c9/?dl=1
-```
-
-and sample with
-```
-python scripts/inpaint.py --indir data/inpainting_examples/ --outdir outputs/inpainting_results
-```
-`indir` should contain images `*.png` and masks `<image_fname>_mask.png` like
-the examples provided in `data/inpainting_examples`.
 
 ## Class-Conditional ImageNet
 
