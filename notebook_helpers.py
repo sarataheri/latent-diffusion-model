@@ -18,23 +18,20 @@ from omegaconf import OmegaConf
 
 def download_models(mode):
 
-    if mode == "superresolution":
-        # this is the small bsr light model
-        url_conf = 'https://heibox.uni-heidelberg.de/f/31a76b13ea27482981b4/?dl=1'
-        url_ckpt = 'https://heibox.uni-heidelberg.de/f/578df07c8fc04ffbadf3/?dl=1'
+    # this is the small bsr light model
+    url_conf = 'https://heibox.uni-heidelberg.de/f/31a76b13ea27482981b4/?dl=1'
+    url_ckpt = 'https://heibox.uni-heidelberg.de/f/578df07c8fc04ffbadf3/?dl=1'
 
-        path_conf = 'logs/diffusion/superresolution_bsr/configs/project.yaml'
-        path_ckpt = 'logs/diffusion/superresolution_bsr/checkpoints/last.ckpt'
+    path_conf = 'logs/diffusion/superresolution_bsr/configs/project.yaml'
+    path_ckpt = 'logs/diffusion/superresolution_bsr/checkpoints/last.ckpt'
 
-        download_url(url_conf, path_conf)
-        download_url(url_ckpt, path_ckpt)
+    download_url(url_conf, path_conf)
+    download_url(url_ckpt, path_ckpt)
 
-        path_conf = path_conf + '/?dl=1' # fix it
-        path_ckpt = path_ckpt + '/?dl=1' # fix it
-        return path_conf, path_ckpt
+    path_conf = path_conf + '/?dl=1' # fix it
+    path_ckpt = path_ckpt + '/?dl=1' # fix it
+    return path_conf, path_ckpt
 
-    else:
-        raise NotImplementedError
 
 
 def load_model_from_config(config, ckpt):
@@ -59,27 +56,11 @@ def get_model(mode):
 def get_custom_cond(mode):
     dest = "data/example_conditioning"
 
-    if mode == "superresolution":
-        uploaded_img = files.upload()
-        filename = next(iter(uploaded_img))
-        name, filetype = filename.split(".") # todo assumes just one dot in name !
-        os.rename(f"{filename}", f"{dest}/{mode}/custom_{name}.{filetype}")
+    uploaded_img = files.upload()
+    filename = next(iter(uploaded_img))
+    name, filetype = filename.split(".") # todo assumes just one dot in name !
+    os.rename(f"{filename}", f"{dest}/{mode}/custom_{name}.{filetype}")
 
-    elif mode == "text_conditional":
-        w = widgets.Text(value='A cake with cream!', disabled=True)
-        display(w)
-
-        with open(f"{dest}/{mode}/custom_{w.value[:20]}.txt", 'w') as f:
-            f.write(w.value)
-
-    elif mode == "class_conditional":
-        w = widgets.IntSlider(min=0, max=1000)
-        display(w)
-        with open(f"{dest}/{mode}/custom.txt", 'w') as f:
-            f.write(w.value)
-
-    else:
-        raise NotImplementedError(f"cond not implemented for mode{mode}")
 
 
 def get_cond_options(mode):
