@@ -166,6 +166,28 @@ def run(model, selected_path, task, custom_steps, resize_enabled=False, classifi
 
 
 @torch.no_grad()
+def convsample_ddim(model, cond, steps, shape, eta=1.0, callback=None, normals_sequence=None,
+                    mask=None, x0=None, quantize_x0=False, img_callback=None,
+                    temperature=1., noise_dropout=0., score_corrector=None,
+                    corrector_kwargs=None, x_T=None, log_every_t=None
+                    ):
+
+    ddim = DDIMSampler(model)
+    bs = shape[0]  # dont know where this comes from but wayne
+    shape = shape[1:]  # cut batch dim
+    print(f"Sampling with eta = {eta}; steps: {steps}")
+    samples, intermediates = ddim.sample(steps, batch_size=bs, shape=shape, conditioning=cond, callback=callback,
+                                         normals_sequence=normals_sequence, quantize_x0=quantize_x0, eta=eta,
+                                         mask=mask, x0=x0, temperature=temperature, verbose=False,
+                                         score_corrector=score_corrector,
+                                         corrector_kwargs=corrector_kwargs, x_T=x_T)
+
+    return samples, intermediates
+
+
+
+
+@torch.no_grad()
 def make_convolutional_sample(batch, model, mode="vanilla", custom_steps=None, eta=1.0, swap_mode=False, masked=False,
                               invert_mask=True, quantize_x0=False, custom_schedule=None, decode_interval=1000,
                               resize_enabled=False, custom_shape=None, temperature=1., noise_dropout=0., corrector=None,
