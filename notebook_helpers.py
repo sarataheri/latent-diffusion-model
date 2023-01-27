@@ -92,20 +92,19 @@ def select_cond_path(mode):
 def get_cond(mode, selected_path):
     mode = "superresolution"
     example = dict()
-    if mode == "superresolution":
-        up_f = 4
-        visualize_cond_img(selected_path)
+    up_f = 4
+    visualize_cond_img(selected_path)
 
-        c = Image.open(selected_path)
-        c = torch.unsqueeze(torchvision.transforms.ToTensor()(c), 0)
-        c_up = torchvision.transforms.functional.resize(c, size=[up_f * c.shape[2], up_f * c.shape[3]], antialias=True)
-        c_up = rearrange(c_up, '1 c h w -> 1 h w c')
-        c = rearrange(c, '1 c h w -> 1 h w c')
-        c = 2. * c - 1.
+    c = Image.open(selected_path)
+    c = torch.unsqueeze(torchvision.transforms.ToTensor()(c), 0)
+    c_up = torchvision.transforms.functional.resize(c, size=[up_f * c.shape[2], up_f * c.shape[3]], antialias=True)
+    c_up = rearrange(c_up, '1 c h w -> 1 h w c')
+    c = rearrange(c, '1 c h w -> 1 h w c')
+    c = 2. * c - 1.
 
-        c = c.to(torch.device("cuda"))
-        example["LR_image"] = c
-        example["image"] = c_up
+    c = c.to(torch.device("cuda"))
+    example["LR_image"] = c
+    example["image"] = c_up
 
     return example
 
@@ -114,8 +113,9 @@ def visualize_cond_img(path):
     display(ipyimg(filename=path))
 
 
-def run(model, selected_path, task, custom_steps, resize_enabled=False, classifier_ckpt=None, global_step=None):
-
+def run(model, selected_path, custom_steps, resize_enabled=False, classifier_ckpt=None, global_step=None):
+    
+    task = "superresolution"
     example = get_cond(task, selected_path)
 
     save_intermediate_vid = False
