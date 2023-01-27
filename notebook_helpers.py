@@ -16,25 +16,22 @@ import time
 from omegaconf import OmegaConf
 
 
-def download_models(mode):
+def download_models():
+    
+    # this is the small bsr light model
+    url_conf = 'https://heibox.uni-heidelberg.de/f/31a76b13ea27482981b4/?dl=1'
+    url_ckpt = 'https://heibox.uni-heidelberg.de/f/578df07c8fc04ffbadf3/?dl=1'
 
-    if mode == "superresolution":
-        # this is the small bsr light model
-        url_conf = 'https://heibox.uni-heidelberg.de/f/31a76b13ea27482981b4/?dl=1'
-        url_ckpt = 'https://heibox.uni-heidelberg.de/f/578df07c8fc04ffbadf3/?dl=1'
+    path_conf = 'logs/diffusion/superresolution_bsr/configs/project.yaml'
+    path_ckpt = 'logs/diffusion/superresolution_bsr/checkpoints/last.ckpt'
 
-        path_conf = 'logs/diffusion/superresolution_bsr/configs/project.yaml'
-        path_ckpt = 'logs/diffusion/superresolution_bsr/checkpoints/last.ckpt'
+    download_url(url_conf, path_conf)
+    download_url(url_ckpt, path_ckpt)
 
-        download_url(url_conf, path_conf)
-        download_url(url_ckpt, path_ckpt)
+    path_conf = path_conf + '/?dl=1' # fix it
+    path_ckpt = path_ckpt + '/?dl=1' # fix it
+    return path_conf, path_ckpt
 
-        path_conf = path_conf + '/?dl=1' # fix it
-        path_ckpt = path_ckpt + '/?dl=1' # fix it
-        return path_conf, path_ckpt
-
-    else:
-        raise NotImplementedError
 
 
 def load_model_from_config(config, ckpt):
@@ -49,8 +46,8 @@ def load_model_from_config(config, ckpt):
     return {"model": model}, global_step
 
 
-def get_model(mode):
-    path_conf, path_ckpt = download_models(mode)
+def get_model():
+    path_conf, path_ckpt = download_models()
     config = OmegaConf.load(path_conf)
     model, step = load_model_from_config(config, path_ckpt)
     return model
