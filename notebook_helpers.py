@@ -57,35 +57,19 @@ def get_model():
     return model
 
 
-def get_custom_cond(mode):
+def get_custom_cond():
+    mode = "superresolution"
     dest = "data/example_conditioning"
 
-    if mode == "superresolution":
-        uploaded_img = files.upload()
-        filename = next(iter(uploaded_img))
-        name, filetype = filename.split(".") # todo assumes just one dot in name !
-        os.rename(f"{filename}", f"{dest}/{mode}/custom_{name}.{filetype}")
-
-    elif mode == "text_conditional":
-        w = widgets.Text(value='A cake with cream!', disabled=True)
-        display(w)
-
-        with open(f"{dest}/{mode}/custom_{w.value[:20]}.txt", 'w') as f:
-            f.write(w.value)
-
-    elif mode == "class_conditional":
-        w = widgets.IntSlider(min=0, max=1000)
-        display(w)
-        with open(f"{dest}/{mode}/custom.txt", 'w') as f:
-            f.write(w.value)
-
-    else:
-        raise NotImplementedError(f"cond not implemented for mode{mode}")
+    uploaded_img = files.upload()
+    filename = next(iter(uploaded_img))
+    name, filetype = filename.split(".") # todo assumes just one dot in name !
+    os.rename(f"{filename}", f"{dest}/{mode}/custom_{name}.{filetype}")
 
 
-def get_cond_options(mode):
+def get_cond_options():
     path = "data/example_conditioning"
-    path = os.path.join(path, mode)
+    path = os.path.join(path, "superresolution")
     onlyfiles = [f for f in sorted(os.listdir(path))]
     return path, onlyfiles
 
@@ -106,6 +90,7 @@ def select_cond_path(mode):
 
 
 def get_cond(mode, selected_path):
+    mode = "superresolution"
     example = dict()
     if mode == "superresolution":
         up_f = 4
