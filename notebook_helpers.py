@@ -49,7 +49,8 @@ def load_model_from_config(config, ckpt):
     return {"model": model}, global_step
 
 
-def get_model(mode):
+def get_model():
+    mode = 'superresolution'
     path_conf, path_ckpt = download_models(mode)
     config = OmegaConf.load(path_conf)
     model, step = load_model_from_config(config, path_ckpt)
